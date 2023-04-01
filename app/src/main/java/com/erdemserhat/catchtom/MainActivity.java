@@ -4,9 +4,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     Handler handler;
 
     ArrayList<ImageView> image_list = new ArrayList<>();
-
+    MediaPlayer click, gameover, background;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +75,10 @@ public class MainActivity extends AppCompatActivity {
         startGame();
         setClickListeners(new ImageView[]{image1, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12});
 
-
+        click = MediaPlayer.create(MainActivity.this, R.raw.click);
+        gameover= MediaPlayer.create(MainActivity.this,R.raw.gameover);
+        background= MediaPlayer.create(MainActivity.this, R.raw.background);
+        background.start();
 
     }
 
@@ -121,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
                     image_list[index].setVisibility(View.INVISIBLE);
                     scoreFlag += (int) (10+Math.random()*10);
                     timeFlag++;
+                    click.start();
                     score.setText("Score : " + scoreFlag);
                     randomizer();
                 }
@@ -134,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void startGame(){
+
         handler = new Handler();
         runnable = new Runnable() {
             @Override
@@ -143,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
                 time.setText("Remaining Time : " +timeFlag);
                 if(timeFlag==0){
                     handler.removeCallbacks(runnable);
+                    background.stop();
+                    gameover.start();
                     AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
                     alert.setTitle("Game Over");
                     alert.setMessage("Congratulations ! Your Score : " +scoreFlag);
