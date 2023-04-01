@@ -13,6 +13,7 @@ public class MainActivity extends AppCompatActivity {
     //Declaring the view components...
     ImageView image1, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12;
     TextView time, score, max_score;
+    int scoreFlag;
 
     ArrayList<ImageView> image_list = new ArrayList<>();
 
@@ -53,8 +54,9 @@ public class MainActivity extends AppCompatActivity {
         image_list.add(image12);
 
         viewController(0);
-
         randomizer();
+        setClickListeners(new ImageView[] {image1, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12});
+
 
 
     }
@@ -77,6 +79,35 @@ public class MainActivity extends AppCompatActivity {
     public void randomizer(){
         int random = (int) (Math.random()*12);
         image_list.get(random).setVisibility(View.VISIBLE);
+
+
+    }
+
+    /**
+     * Sets a click listener for each image in the given array. When an image is clicked,
+     * it will be made invisible and the score will be incremented by one. The score text
+     * will also be updated with the new score. After the image is made invisible and the score
+     * is updated, the randomizer() method will be called.
+     *
+     * @param image_list an array of ImageView objects to attach the click listener to
+     */
+
+    public void setClickListeners(ImageView [] image_list){
+    for(int i=0; i<image_list.length; i++){
+        final int index = i;
+        image_list[i].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                image_list[index].setVisibility(View.INVISIBLE);
+                scoreFlag++;
+                score.setText("Score : "+ scoreFlag);
+                randomizer();
+            }
+        });
+
+
+    }
+
 
 
     }
