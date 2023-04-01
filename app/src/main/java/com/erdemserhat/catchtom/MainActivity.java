@@ -3,15 +3,19 @@ package com.erdemserhat.catchtom;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.security.keystore.StrongBoxUnavailableException;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -25,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<ImageView> image_list = new ArrayList<>();
     MediaPlayer click, gameover, background;
+
+    SharedPreferences sp;
+    int currentMax;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
         gameover= MediaPlayer.create(MainActivity.this,R.raw.gameover);
         background= MediaPlayer.create(MainActivity.this, R.raw.background);
         background.start();
+        sp=this.getSharedPreferences("com.erdemserhat.catchtom", Context.MODE_PRIVATE);
+        currentMax= sp.getInt("max",100);
+        max_score.setText("Max Score : "+currentMax);
+
+
+
 
     }
 
@@ -125,9 +138,11 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     image_list[index].setVisibility(View.INVISIBLE);
                     scoreFlag += (int) (10+Math.random()*10);
+                    score.setText("Score : "+scoreFlag);
                     timeFlag++;
+
                     click.start();
-                    score.setText("Score : " + scoreFlag);
+
                     randomizer();
                 }
             });
@@ -147,18 +162,36 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 handler.postDelayed(runnable,250);
                 timeFlag--;
+                if(scoreFlag> currentMax){
+                    sp.edit().putInt("max",scoreFlag).apply();
+                    max_score.setText("Max Score : " +scoreFlag);
+
+                }
                 time.setText("Remaining Time : " +timeFlag);
                 if(timeFlag==0){
+                    //Max point control
+                    if(scoreFlag> currentMax){
+
+                        Toast.makeText(MainActivity.this,"you passed the max score",Toast.LENGTH_SHORT).show();
+                    }
                     handler.removeCallbacks(runnable);
-                    background.stop();
+                    background.pause();
                     gameover.start();
                     AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
                     alert.setTitle("Game Over");
-                    alert.setMessage("Congratulations ! Your Score : " +scoreFlag);
+                    alert.setCancelable(false);
+                    alert.setMessage("Congratulations ! Your "+score.getText().toString());
                     alert.setPositiveButton("Continue to Play", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            //operations when replay button has been clicked.
+                            scoreFlag=0;
+                            handler.removeCallbacks(runnable);
+                            timeFlag=30;
+                            time.setText("Remaining Time : " +timeFlag);
+                            gameover.stop();
+                            background.start();
+                            startGame();
+
                         }
                     });
 
@@ -169,6 +202,9 @@ public class MainActivity extends AppCompatActivity {
                            System.exit(0);
                         }
                     });
+
+
+
                     alert.show();
 
 
